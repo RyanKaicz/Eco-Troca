@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<link rel="manifest" href="manifest.json">
+<head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EcoTroca - Sustentabilidade Escolar</title>
+  <title>EcoTroca - Compartilhe e Transforme sua Comunidade</title>
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -12,7 +13,7 @@
   <header>
     <div class="header-container">
       <h1>🌱 EcoTroca</h1>
-      <p>Reutilize, doei e ajude o planeta na sua escola!</p>
+      <p>Doe, troque e reutilize itens na sua região. Ajude o meio ambiente!</p>
     </div>
   </header>
 
@@ -21,32 +22,39 @@
 
     <!-- Formulário de Cadastro -->
     <section class="card-form">
-      <h2>Cadastrar Item para Doação/Troca</h2>
+      <h2>Cadastrar Item para Doação ou Troca</h2>
       <form id="item-form">
         <div class="form-group">
           <label for="titulo">Nome do Item</label>
-          <input type="text" id="titulo" placeholder="Ex: Livro de Biologia 1º Ano" required>
+          <input type="text" id="titulo" placeholder="Ex: Bicicleta, Livro, Cadeira de Escritório" required>
         </div>
 
         <div class="form-group">
           <label for="categoria">Categoria</label>
           <select id="categoria" required>
             <option value="">Selecione uma categoria</option>
-            <option value="Livros e Didáticos">Livros e Didáticos</option>
-            <option value="Material Escolar">Material Escolar</option>
-            <option value="Eletrônicos">Eletrônicos</option>
+            <option value="Livros e Leitura">Livros e Leitura</option>
+            <option value="Móveis e Casa">Móveis e Casa</option>
+            <option value="Eletrônicos e Eletros">Eletrônicos e Eletros</option>
+            <option value="Vestuário e Acessórios">Vestuário e Acessórios</option>
+            <option value="Ferramentas e Jardim">Ferramentas e Jardim</option>
             <option value="Outros">Outros</option>
           </select>
         </div>
 
         <div class="form-group">
-          <label for="descricao">Descrição / Estado de Conservação</label>
-          <textarea id="descricao" rows="3" placeholder="Descreva o estado do item e onde entregar na escola..." required></textarea>
+          <label for="descricao">Descrição e Estado de Conservação</label>
+          <textarea id="descricao" rows="3" placeholder="Descreva o estado do item e detalhes sobre a retirada..." required></textarea>
         </div>
 
         <div class="form-group">
-          <label for="contato">Seu Nome e Turma</label>
-          <input type="text" id="contato" placeholder="Ex: Ana Silva (2º B)" required>
+          <label for="localizacao">Seu Bairro / Cidade</label>
+          <input type="text" id="localizacao" placeholder="Ex: Centro, São Paulo / SP" required>
+        </div>
+
+        <div class="form-group">
+          <label for="contato">Seu Nome e Contato (WhatsApp ou E-mail)</label>
+          <input type="text" id="contato" placeholder="Ex: João Silva - (11) 99999-9999" required>
         </div>
 
         <button type="submit" class="btn-primary">Publicar Item</button>
@@ -56,13 +64,15 @@
     <!-- Filtro e Lista de Itens -->
     <section class="catalog">
       <div class="catalog-header">
-        <h2>Itens Disponíveis</h2>
+        <h2>Itens Disponíveis na Comunidade</h2>
         <div class="filter-group">
           <select id="filter-categoria">
             <option value="TODAS">Todas as Categorias</option>
-            <option value="Livros e Didáticos">Livros e Didáticos</option>
-            <option value="Material Escolar">Material Escolar</option>
-            <option value="Eletrônicos">Eletrônicos</option>
+            <option value="Livros e Leitura">Livros e Leitura</option>
+            <option value="Móveis e Casa">Móveis e Casa</option>
+            <option value="Eletrônicos e Eletros">Eletrônicos e Eletros</option>
+            <option value="Vestuário e Acessórios">Vestuário e Acessórios</option>
+            <option value="Ferramentas e Jardim">Ferramentas e Jardim</option>
             <option value="Outros">Outros</option>
           </select>
         </div>
@@ -75,9 +85,14 @@
   </main>
 
   <footer>
-    <p>Projeto EcoTroca • Feito para a Feira/Competição de Programação</p>
+    <p>Projeto EcoTroca • Incentivando a Economia Circular na sua Cidade</p>
   </footer>
 
+  <!-- SDKs do Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+  <!-- Lógica da Aplicação -->
   <script src="app.js"></script>
 </body>
 </html>
