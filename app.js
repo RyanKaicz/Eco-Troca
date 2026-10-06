@@ -1,4 +1,4 @@
-// Configuração do Firebase com a SUA chave real
+// Configuração do Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCdyDOxecBHTESa9l7nM5fk4E-bpvF_9HA",
   authDomain: "ecotroca-811fc.firebaseapp.com",
@@ -84,13 +84,16 @@ function renderItems() {
   });
 }
 
-// Função para remover item validando o PIN/Senha
+// Função para remover item validando o PIN/Senha ou a Senha Mestre (0000)
 function removerItem(itemId, pinCorreto) {
-  const pinDigitado = prompt("Digite o PIN/Senha que você criou ao cadastrar este item:");
+  const pinDigitado = prompt("Digite o PIN/Senha que você criou ao cadastrar este item (ou a senha mestre):");
 
-  if (pinDigitado === null) return; // Se clicou em cancelar
+  if (pinDigitado === null) return; // Se o usuário clicou em cancelar
 
-  if (pinDigitado.trim() === pinCorreto) {
+  const pinLimpo = pinDigitado.trim();
+
+  // Aceita o PIN criado OU a senha mestre 0000
+  if (pinLimpo === pinCorreto || pinLimpo === '0000') {
     itemsRef.child(itemId).remove()
       .then(() => {
         alert("Item removido com sucesso!");
@@ -99,7 +102,7 @@ function removerItem(itemId, pinCorreto) {
         alert("Erro ao remover item: " + error.message);
       });
   } else {
-    alert("❌ PIN/Senha incorreto! Apenas o criador do anúncio pode removê-lo.");
+    alert("❌ PIN/Senha incorreto! Apenas o criador do anúncio ou o administrador pode removê-lo.");
   }
 }
 
@@ -149,7 +152,7 @@ itemForm.addEventListener('submit', async (e) => {
 
 filterCategoria.addEventListener('change', renderItems);
 
-// Redimensiona e comprime imagens antes de enviar
+// Redimensiona e comprime imagens antes de enviar para economizar espaço
 function compressAndConvertToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -181,10 +184,4 @@ function escapeHTML(str) {
   return str.replace(/[&<>'"]/g, 
     tag => ({
       '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag)
-  );
-}
+      
