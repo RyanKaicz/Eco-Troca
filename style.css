@@ -5,6 +5,8 @@
   --card-bg: #ffffff;
   --text: #333333;
   --border: #e0e0e0;
+  --danger: #d32f2f;
+  --danger-hover: #b71c1c;
 }
 
 * {
@@ -165,6 +167,25 @@ header {
   border-top: 1px solid var(--border);
   padding-top: 0.6rem;
   line-height: 1.4;
+  margin-bottom: 0.8rem;
+}
+
+.btn-delete {
+  background-color: #fff;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.btn-delete:hover {
+  background-color: var(--danger);
+  color: white;
 }
 
 .empty-message {
