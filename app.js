@@ -69,14 +69,38 @@ function renderItems() {
         <h3>${escapeHTML(item.titulo)}</h3>
         <p>${escapeHTML(item.descricao)}</p>
       </div>
-      <div class="contact-info">
-        📍 <strong>Localização:</strong> ${escapeHTML(item.localizacao)}<br>
-        👤 <strong>Contato:</strong> ${escapeHTML(item.contato)}
+      <div>
+        <div class="contact-info">
+          📍 <strong>Localização:</strong> ${escapeHTML(item.localizacao)}<br>
+          👤 <strong>Contato:</strong> ${escapeHTML(item.contato)}
+        </div>
+        <button class="btn-delete" onclick="removerItem('${item.id}', '${item.pin}')">
+          🗑️ Remover (Já doado/trocado)
+        </button>
       </div>
     `;
 
     itemsGrid.appendChild(card);
   });
+}
+
+// Função para remover item validando o PIN/Senha
+function removerItem(itemId, pinCorreto) {
+  const pinDigitado = prompt("Digite o PIN/Senha que você criou ao cadastrar este item:");
+
+  if (pinDigitado === null) return; // Se clicou em cancelar
+
+  if (pinDigitado.trim() === pinCorreto) {
+    itemsRef.child(itemId).remove()
+      .then(() => {
+        alert("Item removido com sucesso!");
+      })
+      .catch((error) => {
+        alert("Erro ao remover item: " + error.message);
+      });
+  } else {
+    alert("❌ PIN/Senha incorreto! Apenas o criador do anúncio pode removê-lo.");
+  }
 }
 
 // Cadastrar item no Firebase
@@ -88,9 +112,10 @@ itemForm.addEventListener('submit', async (e) => {
   const descricao = document.getElementById('descricao').value.trim();
   const localizacao = document.getElementById('localizacao').value.trim();
   const contato = document.getElementById('contato').value.trim();
+  const pin = document.getElementById('pin').value.trim();
   const imageInput = document.getElementById('imagem');
 
-  if (!titulo || !categoria || !descricao || !localizacao || !contato) {
+  if (!titulo || !categoria || !descricao || !localizacao || !contato || !pin) {
     alert('Por favor, preencha todos os campos obrigatórios!');
     return;
   }
@@ -112,6 +137,7 @@ itemForm.addEventListener('submit', async (e) => {
     descricao,
     localizacao,
     contato,
+    pin,
     imagemBase64,
     timestamp: Date.now()
   }).then(() => {
