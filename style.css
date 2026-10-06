@@ -116,7 +116,6 @@ header {
   gap: 1.5rem;
 }
 
-/* Card do Item com Foto */
 .item-card {
   background: var(--card-bg);
   border-radius: 8px;
