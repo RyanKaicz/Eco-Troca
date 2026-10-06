@@ -1,63 +1,58 @@
-// Chave para armazenar no localStorage do navegador
-const STORAGE_KEY = 'ecotroca_items_v1';
+// 1. Configuração do Firebase (Substitua pelas suas chaves do Firebase Console)
+const firebaseConfig = {
+  apiKey: "SUA_API_KEY_AQUI",
+  authDomain: "seu-projeto.firebaseapp.com",
+  databaseURL: "https://seu-projeto-default-rtdb.firebaseio.com",
+  projectId: "seu-projeto",
+  storageBucket: "seu-projeto.appspot.com",
+  messagingSenderId: "1234567890",
+  appId: "1:1234567890:web:abcdef123456"
+};
 
-// Dados de exemplo iniciais caso o usuário nunca tenha usado o app
-const initialItems = [
-  {
-    id: 1,
-    titulo: 'Calculadora Científica FX-82',
-    categoria: 'Eletrônicos',
-    descricao: 'Funcionando perfeitamente. Não preciso mais para as aulas.',
-    contato: 'Lucas M. (3º C)'
-  },
-  {
-    id: 2,
-    titulo: 'Livro "Dom Casmurro"',
-    categoria: 'Livros e Didáticos',
-    descricao: 'Livro usado no 1º bimestre. Ótimo estado.',
-    contato: 'Mariana K. (1º A)'
-  }
-];
+// 2. Inicializar o Firebase
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const itemsRef = database.ref('itens_ecotroca_geral');
 
 // Elementos do DOM
 const itemForm = document.getElementById('item-form');
 const itemsGrid = document.getElementById('items-grid');
 const filterCategoria = document.getElementById('filter-categoria');
 
-// Carregar itens salvos no navegador ou carregar iniciais
-function getStoredItems() {
-  const data = localStorage.getItem(STORAGE_KEY);
-  if (!data) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(initialItems));
-    return initialItems;
+let allItemsArray = [];
+
+// 3. Escutar mudanças na nuvem em TEMPO REAL
+itemsRef.on('value', (snapshot) => {
+  const data = snapshot.val();
+  allItemsArray = [];
+
+  if (data) {
+    Object.keys(data).forEach(key => {
+      allItemsArray.push({
+        id: key,
+        ...data[key]
+      });
+    });
+    allItemsArray.reverse(); // Exibe os cadastros mais recentes primeiro
   }
-  return JSON.parse(data);
-}
 
-// Salvar novos itens
-function saveItems(items) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-}
+  renderItems();
+});
 
-// Renderizar cards na tela
+// 4. Renderizar os cards na tela
 function renderItems() {
-  const items = getStoredItems();
   const selectedFilter = filterCategoria.value;
-
-  // Limpar a lista atual
   itemsGrid.innerHTML = '';
 
-  // Filtrar itens por categoria
   const filteredItems = selectedFilter === 'TODAS'
-    ? items
-    : items.filter(item => item.categoria === selectedFilter);
+    ? allItemsArray
+    : allItemsArray.filter(item => item.categoria === selectedFilter);
 
   if (filteredItems.length === 0) {
-    itemsGrid.innerHTML = `<p class="empty-message">Nenhum item encontrado nesta categoria.</p>`;
+    itemsGrid.innerHTML = `<p class="empty-message">Nenhum item disponível nesta categoria momento.</p>`;
     return;
   }
 
-  // Criar os cards dinamicamente
   filteredItems.forEach(item => {
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -69,7 +64,8 @@ function renderItems() {
         <p>${escapeHTML(item.descricao)}</p>
       </div>
       <div class="contact-info">
-        Anunciado por: <strong>${escapeHTML(item.contato)}</strong>
+        📍 <strong>Localização:</strong> ${escapeHTML(item.localizacao)}<br>
+        👤 <strong>Contato:</strong> ${escapeHTML(item.contato)}
       </div>
     `;
 
@@ -77,42 +73,39 @@ function renderItems() {
   });
 }
 
-// Adicionar um novo item via formulário
+// 5. Cadastrar novo item no Firebase
 itemForm.addEventListener('submit', (e) => {
   e.preventDefault();
 
   const titulo = document.getElementById('titulo').value.trim();
   const categoria = document.getElementById('categoria').value;
   const descricao = document.getElementById('descricao').value.trim();
+  const localizacao = document.getElementById('localizacao').value.trim();
   const contato = document.getElementById('contato').value.trim();
 
-  if (!titulo || !categoria || !descricao || !contato) {
+  if (!titulo || !categoria || !descricao || !localizacao || !contato) {
     alert('Por favor, preencha todos os campos!');
     return;
   }
 
-  const newItem = {
-    id: Date.now(),
+  itemsRef.push({
     titulo,
     categoria,
     descricao,
-    contato
-  };
-
-  const currentItems = getStoredItems();
-  currentItems.unshift(newItem); // Adiciona no início da lista
-
-  saveItems(currentItems);
-  renderItems();
-
-  // Resetar formulário
-  itemForm.reset();
+    localizacao,
+    contato,
+    timestamp: Date.now()
+  }).then(() => {
+    itemForm.reset();
+  }).catch((error) => {
+    alert('Erro ao publicar item: ' + error.message);
+  });
 });
 
-// Evento de mudança de filtro
+// Evento do filtro de categoria
 filterCategoria.addEventListener('change', renderItems);
 
-// Função de segurança básica para prevenir XSS ao injetar HTML
+// Proteção XSS
 function escapeHTML(str) {
   return str.replace(/[&<>'"]/g, 
     tag => ({
@@ -124,6 +117,3 @@ function escapeHTML(str) {
     }[tag] || tag)
   );
 }
-
-// Inicializar aplicativo
-document.addEventListener('DOMContentLoaded', renderItems);
