@@ -1,11 +1,4 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
-
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Configuração do Firebase com a SUA chave real
 const firebaseConfig = {
   apiKey: "AIzaSyCdyDOxecBHTESa9l7nM5fk4E-bpvF_9HA",
   authDomain: "ecotroca-811fc.firebaseapp.com",
@@ -17,18 +10,19 @@ const firebaseConfig = {
   measurementId: "G-CCYHQ4WX95"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// Inicializar Firebase e Realtime Database
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const itemsRef = database.ref('itens_ecotroca_geral');
 
-// Elementos do DOM
+// Elementos da interface
 const itemForm = document.getElementById('item-form');
 const itemsGrid = document.getElementById('items-grid');
 const filterCategoria = document.getElementById('filter-categoria');
 
 let allItemsArray = [];
 
-// 3. Escutar atualizações na nuvem em tempo real
+// Escutar atualizações da nuvem em tempo real
 itemsRef.on('value', (snapshot) => {
   const data = snapshot.val();
   allItemsArray = [];
@@ -46,7 +40,7 @@ itemsRef.on('value', (snapshot) => {
   renderItems();
 });
 
-// 4. Renderizar itens na tela (com suporte a foto)
+// Renderizar cards na tela
 function renderItems() {
   const selectedFilter = filterCategoria.value;
   itemsGrid.innerHTML = '';
@@ -64,7 +58,6 @@ function renderItems() {
     const card = document.createElement('div');
     card.className = 'item-card';
 
-    // Se tiver imagem, insere a tag <img>, senão não mostra nada
     const imgHTML = item.imagemBase64 
       ? `<img src="${item.imagemBase64}" alt="${escapeHTML(item.titulo)}" class="card-img">`
       : '';
@@ -86,7 +79,7 @@ function renderItems() {
   });
 }
 
-// 5. Cadastrar item (convertendo e comprimindo imagem se houver)
+// Cadastrar item no Firebase
 itemForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -104,17 +97,15 @@ itemForm.addEventListener('submit', async (e) => {
 
   let imagemBase64 = '';
 
-  // Processa a imagem se o usuário selecionou alguma
   if (imageInput.files && imageInput.files[0]) {
     try {
       imagemBase64 = await compressAndConvertToBase64(imageInput.files[0]);
     } catch (err) {
-      alert('Erro ao carregar a imagem. Tente uma imagem menor.');
+      alert('Erro ao processar imagem. Tente uma foto diferente.');
       return;
     }
   }
 
-  // Salva na nuvem (Firebase)
   itemsRef.push({
     titulo,
     categoria,
@@ -130,10 +121,9 @@ itemForm.addEventListener('submit', async (e) => {
   });
 });
 
-// Evento de mudança de filtro
 filterCategoria.addEventListener('change', renderItems);
 
-// Função auxiliar para redimensionar e comprimir a foto antes de enviar
+// Redimensiona e comprime imagens antes de enviar
 function compressAndConvertToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -143,16 +133,15 @@ function compressAndConvertToBase64(file) {
       img.src = event.target.result;
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        const MAX_WIDTH = 500; // Largura máxima da imagem em pixels
+        const MAX_WIDTH = 500;
         const scaleSize = MAX_WIDTH / img.width;
         
         canvas.width = MAX_WIDTH;
         canvas.height = img.height * scaleSize;
 
-        const ctx = canvas.getContext('canvas');
+        const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-        // Retorna a imagem comprimida em formato WebP/JPEG leve
         resolve(canvas.toDataURL('image/jpeg', 0.7));
       };
       img.onerror = (error) => reject(error);
