@@ -62,6 +62,9 @@ function renderItems() {
       ? `<img src="${item.imagemBase64}" alt="${escapeHTML(item.titulo)}" class="card-img">`
       : '';
 
+    // Trata o PIN caso o item seja antigo e não tenha PIN cadastrado
+    const pinDoItem = item.pin ? String(item.pin) : '';
+
     card.innerHTML = `
       <div>
         ${imgHTML}
@@ -74,7 +77,7 @@ function renderItems() {
           📍 <strong>Localização:</strong> ${escapeHTML(item.localizacao)}<br>
           👤 <strong>Contato:</strong> ${escapeHTML(item.contato)}
         </div>
-        <button class="btn-delete" onclick="removerItem('${item.id}', '${item.pin}')">
+        <button class="btn-delete" onclick="removerItem('${item.id}', '${pinDoItem}')">
           🗑️ Remover (Já doado/trocado)
         </button>
       </div>
@@ -86,14 +89,17 @@ function renderItems() {
 
 // Função para remover item validando o PIN/Senha ou a Senha Mestre (0000)
 function removerItem(itemId, pinCorreto) {
-  const pinDigitado = prompt("Digite o PIN/Senha que você criou ao cadastrar este item (ou a senha mestre):");
+  const pinDigitado = prompt("Digite o PIN/Senha que criou ao cadastrar este item (ou a senha mestre):");
 
-  if (pinDigitado === null) return; // Se o usuário clicou em cancelar
+  if (pinDigitado === null) return; // Se o utilizador cancelou
 
-  const pinLimpo = pinDigitado.trim();
+  const pinLimpo = String(pinDigitado).trim();
+  const pinOriginal = String(pinCorreto).trim();
 
-  // Aceita o PIN criado OU a senha mestre 0000
-  if (pinLimpo === pinCorreto || pinLimpo === '0000') {
+  // 1. Prioridade: Se for a senha mestre '0000'
+  // 2. Se a senha digitada for igual ao PIN do item
+  // 3. Se o item não tinha PIN (item antigo cadastrado antes da funcionalidade)
+  if (pinLimpo === '0000' || (pinOriginal !== '' && pinLimpo === pinOriginal) || pinOriginal === '') {
     itemsRef.child(itemId).remove()
       .then(() => {
         alert("Item removido com sucesso!");
@@ -152,7 +158,7 @@ itemForm.addEventListener('submit', async (e) => {
 
 filterCategoria.addEventListener('change', renderItems);
 
-// Redimensiona e comprime imagens antes de enviar para economizar espaço
+// Redimensiona e comprime imagens antes de enviar
 function compressAndConvertToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -184,4 +190,10 @@ function escapeHTML(str) {
   return str.replace(/[&<>'"]/g, 
     tag => ({
       '&': '&amp;',
-      
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
