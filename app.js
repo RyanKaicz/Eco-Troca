@@ -180,3 +180,16 @@ function compressAndConvertToBase64(file) {
     reader.onerror = (error) => reject(error);
   });
 }
+
+
+function escapeHTML(str) {
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
