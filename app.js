@@ -1,4 +1,4 @@
-// Configuração do Firebase
+
 const firebaseConfig = {
   apiKey: "AIzaSyCdyDOxecBHTESa9l7nM5fk4E-bpvF_9HA",
   authDomain: "ecotroca-811fc.firebaseapp.com",
@@ -10,19 +10,17 @@ const firebaseConfig = {
   measurementId: "G-CCYHQ4WX95"
 };
 
-// Inicializar Firebase e Realtime Database
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
 const itemsRef = database.ref('itens_ecotroca_geral');
 
-// Elementos da interface
+
 const itemForm = document.getElementById('item-form');
 const itemsGrid = document.getElementById('items-grid');
 const filterCategoria = document.getElementById('filter-categoria');
 
 let allItemsArray = [];
 
-// Escutar atualizações da nuvem em tempo real
 itemsRef.on('value', (snapshot) => {
   const data = snapshot.val();
   allItemsArray = [];
@@ -40,7 +38,7 @@ itemsRef.on('value', (snapshot) => {
   renderItems();
 });
 
-// Renderizar cards na tela
+
 function renderItems() {
   const selectedFilter = filterCategoria.value;
   itemsGrid.innerHTML = '';
@@ -62,7 +60,7 @@ function renderItems() {
       ? `<img src="${item.imagemBase64}" alt="${escapeHTML(item.titulo)}" class="card-img">`
       : '';
 
-    // Trata o PIN caso o item seja antigo e não tenha PIN cadastrado
+  
     const pinDoItem = item.pin ? String(item.pin) : '';
 
     card.innerHTML = `
@@ -87,18 +85,17 @@ function renderItems() {
   });
 }
 
-// Função para remover item validando o PIN/Senha ou a Senha Mestre (0000)
 function removerItem(itemId, pinCorreto) {
   const pinDigitado = prompt("Digite o PIN/Senha que criou ao cadastrar este item (ou a senha mestre):");
 
-  if (pinDigitado === null) return; // Se o utilizador cancelou
+  if (pinDigitado === null) return;
 
   const pinLimpo = String(pinDigitado).trim();
   const pinOriginal = String(pinCorreto).trim();
 
-  // 1. Prioridade: Se for a senha mestre '0000'
-  // 2. Se a senha digitada for igual ao PIN do item
-  // 3. Se o item não tinha PIN (item antigo cadastrado antes da funcionalidade)
+  
+
+
   if (pinLimpo === '0000' || (pinOriginal !== '' && pinLimpo === pinOriginal) || pinOriginal === '') {
     itemsRef.child(itemId).remove()
       .then(() => {
@@ -112,7 +109,6 @@ function removerItem(itemId, pinCorreto) {
   }
 }
 
-// Cadastrar item no Firebase
 itemForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
@@ -158,7 +154,7 @@ itemForm.addEventListener('submit', async (e) => {
 
 filterCategoria.addEventListener('change', renderItems);
 
-// Redimensiona e comprime imagens antes de enviar
+
 function compressAndConvertToBase64(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -183,17 +179,4 @@ function compressAndConvertToBase64(file) {
     };
     reader.onerror = (error) => reject(error);
   });
-}
-
-// Proteção XSS
-function escapeHTML(str) {
-  return str.replace(/[&<>'"]/g, 
-    tag => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      "'": '&#39;',
-      '"': '&quot;'
-    }[tag] || tag)
-  );
 }
